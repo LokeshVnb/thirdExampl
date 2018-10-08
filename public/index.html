@@ -1,0 +1,309 @@
+<!Doctype html>
+<html>
+    
+    <title></title>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="/js/chessboard-0.3.0.js"></script>
+        <script src="/js/chess.js"></script>
+        <link href="/style.css" rel="stylesheet"/>
+        <link href="/css/chessboard-0.3.0.css" rel="stylesheet"/>
+        <script src="./js/siofu/client.js"></script>
+       <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>-->
+       <!-- <script src="../node_modules/chess.js/chess.min.js"></script>-->
+       <!--<script src="../require.js"></script>-->
+    </head>
+    <body>
+        <div class="login_content" id="login_content">
+            <table class="tbl_login" id="tbl_login">
+                <tr><td><input id="ip_id" type="text" placeholder="enter your id"/></td></tr>
+                <tr><td><input id="ip_session" type="text" placeholder="enter the session"/></td></tr>
+                <tr><td><button id="btn_create" >create</button>
+                <button id="btn_join" >join</button></td></tr>
+            </table>
+        </div>
+       <div class="playground" id="playground">
+        <div class="chess_board" id="chess_board"></div>
+        <div class="message_content" id="message_content">
+        <input id="ip_message" type="text" placeholder="Enter ur message"/>
+        <button id="btn_send" >send</button>
+        <p>Chat Panel</p>
+        <hr/>
+        <div class="chat_area" id="chat_area">
+            
+        </div>
+        <div class="file_upload">
+            <input type="file" id="siofu_input" />
+            <button id="submit"></button>
+        </div>
+       
+        </div>
+        
+    </div>
+        <script>
+            //var socket=io.connect("http://localhost:4000");
+            var socket=io();
+           // socket.emit('name',{name:"myname",type:"coach"});
+            var idinput=$("#ip_id");
+            var msgInput=$("#ip_message");
+            var chatArea=$("#chat_area");
+            var sessionInput=$("#ip_session");
+            var roomid;
+            var username;
+            var sessionid;
+            var draggable;
+            var uploader = new SocketIOFileUpload(socket);
+           // uploader.listenOnInput(document.getElementById("siofu_input"));
+           uploader.listenOnSubmit(document.getElementById("submit"),document.getElementById("siofu_input"))
+            console.log(window.location.hostname);
+        
+            $("#btn_create").on('click',function(e)
+            {
+               
+                socket.emit('create_seesion',{
+                    username:idinput.val(),
+                    sess_id:sessionInput.val(),
+                });
+                   
+            })
+            $("#btn_join").on('click',function(e)
+            {
+                socket.emit('join_seesion',
+                {
+                    username:idinput.val(),
+                });
+               
+
+            })
+            $("#btn_send").on('click',function(e)
+            {
+                chatArea.append("<div class='msg_box'>"+
+                    "<img src='/art/user_prof_pic.png' width='50' height='50'/>"+
+                    "<div class='msg_own'>"+msgInput.val()+"</div>"+
+                    "</div>");
+                socket.emit('chat',
+                {
+                    message:msgInput.val(),
+                    roomid:roomid,
+                    username:username,
+                    sess_id:sessionid,
+                });    
+            });
+
+            
+
+            socket.on('create_seesion',function(data)
+            {
+            alert(data.message);
+            roomid=data.roomid;
+            sessionid=data.sess_id;
+            username=data.username;
+            $("#btn_create").hide();
+            $("#btn_join").hide();
+            $("#login_content").hide();
+            $("#playground").show();
+            draggable=true;
+            initboard();
+            })
+            socket.on('join_seesion',function(data)
+            {
+            alert(data.message);
+            roomid=data.roomid;
+            sessionid=data.sess_id;
+            username=data.username;
+            $("#btn_create").hide();
+            $("#btn_join").hide();
+            $("#login_content").hide();
+            $("#playground").show();
+            draggable=false;
+            initboard();
+        if(moves.length==0)
+        {
+        socket.emit('move_req',{roomid:roomid,username:username,session:sessionid});
+        }
+            
+            })
+            socket.on('onjoin',function(data)
+            {
+            alert(data.message);
+            })
+
+            socket.on('chat',function(data)
+            {
+                console.log(data.message);
+                chatArea.append("<div class='msg_box'>"+data.username+"<div class='msg_from'>"+data.message+"</div><img src='/art/user_prof_pic.png' width='50' height='50'/></div><br/>");        
+            })
+
+            socket.on('onComplete',function(data)
+            {
+                alert(data.file);
+                 chatArea.append("<img src='/upload/"+data.file+"' width='100px' height='100px' />");       
+                 socket.emit('file_uploaded',{file:data.file,roomid:roomid});
+            });
+
+            socket.on("file_transfer",function(data)
+            {
+                chatArea.append("<img src='/upload/"+data.file+"' width='100px' height='100px' />");       
+            })
+
+            //for chess board
+  
+  var board;
+  var game = new Chess();
+  var moves=[];
+  
+ /* statusEl = $('#status'),
+  fenEl = $('#fen'),
+  pgnEl = $('#pgn');*/
+  var onDragStart = function(source, piece, position, orientation) {
+  if (game.game_over() === true ||
+      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+    return false;
+  }
+};
+
+var makeRandomMove = function() {
+  var possibleMoves = game.moves();
+
+  // game over
+  if (possibleMoves.length === 0) return;
+
+  var randomIndex = Math.floor(Math.random() * possibleMoves.length);
+  game.move(possibleMoves[randomIndex]);
+  board.position(game.fen());
+  updateStatus();
+};
+
+var onDrop = function(source, target) {
+  // see if the move is legal
+  var move = game.move({
+    from: source,
+    to: target,
+    promotion: 'q' // NOTE: always promote to a queen for example simplicity
+  });
+  // illegal move
+  if (move === null) return 'snapback';
+
+  updateStatus();
+ // window.setTimeout(makeRandomMove, 250);
+  moves.push(move);
+    console.log(move.to);
+  socket.emit('move',{
+      move:move,
+      source:source,
+      target:target,
+      roomid:roomid,
+      sess_id:sessionid,
+      username:username,
+      fen:game.fen(),
+  })
+};
+
+socket.on('move',function(data)
+{
+  var move = game.move({
+            from:data.source,
+            to:data.target,
+            promotion: 'q'
+        });
+  // illegal move
+  if (move === null) return 'snapback';
+
+  updateStatus();
+  moves.push(move);
+  board.position(game.fen());
+  /*game=new Chess(data.fen);
+  
+  updateStatus();*/
+  
+})
+
+
+socket.on('move_req',function(data)
+{
+    console.log(data);
+    for(var i=0;i<data.length;i++)
+    {
+        console.log(data[i].from);
+        if(data[i].from!==""&&data[i].to!=="")
+        {
+        var move=game.move({
+            from:data[i].from,
+            to:data[i].to,
+            promotion:'q',
+        })
+        if (move === null) return 'snapback';
+        updateStatus();
+        moves.push(move);
+        board.position(game.fen());
+        }
+        else
+        {
+          chatArea.append("<div class='msg_box'><div class='msg_from'>"+data[i].message+"</div><img src='/art/user_prof_pic.png' width='50' height='50'/></div><br/>");        
+        }
+    }
+})
+
+
+// update the board position after the piece snap 
+// for castling, en passant, pawn promotion
+var onSnapEnd = function() {
+  board.position(game.fen());
+};
+
+
+
+var updateStatus = function() {
+  var status = '';
+
+  var moveColor = 'White';
+  if (game.turn() === 'b') {
+    moveColor = 'Black';
+  }
+
+  // checkmate?
+  if (game.in_checkmate() === true) {
+    status = 'Game over, ' + moveColor + ' is in checkmate.';
+  }
+
+  // draw?
+  else if (game.in_draw() === true) {
+    status = 'Game over, drawn position';
+  }
+
+  // game still on
+  else {
+    status = moveColor + ' to move';
+
+    // check?
+    if (game.in_check() === true) {
+      status += ', ' + moveColor + ' is in check';
+    }
+  }
+
+  /*statusEl.html(status);
+  fenEl.html(game.fen());
+  pgnEl.html(game.pgn());*/
+  console.log(game.pgn());
+};
+
+function initboard()
+{
+var cfg = {
+  draggable: draggable,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+};
+board = ChessBoard('chess_board', cfg);
+updateStatus();
+}
+
+            
+        </script>
+       
+    </body>
+</html>

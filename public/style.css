@@ -1,0 +1,151 @@
+.msg_from
+{
+    background-color:#424242;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    float: left;
+}
+.msg_own
+{
+    background-color:#ff6a6a;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+   float: right;
+}
+.msg_box
+{
+  border: 2px solid #dedede;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+}
+.msg_box::after
+{
+    content: "";
+    clear: both;
+    display: table;
+}
+.chat_area
+{
+    width: 400px;
+    height:300px;
+   
+    overflow-y: auto;
+    
+}
+.file_upload
+{
+    display: none;
+}
+
+.login_content input[type="text"]
+{
+    
+    height: 20px;
+    padding: 2px;
+    border: none;
+    border-bottom: 1px solid #424242;
+    border-left: 2px solid #ca4747;
+    border-top: 2px solid #ffb969;
+    border-right: 2px solid #c6fc70;
+    text-decoration: none;
+    text-decoration-style: none;
+     outline: none;
+}
+.login_content input[type="text"]:focus
+{
+    
+   
+    border-bottom: 1px solid #ff6a6a;
+    
+     
+}
+
+.login_content
+{
+    width:200px;
+    height:200px;
+    background-color: #fff;
+    box-shadow: 2px 2px 10px #000;
+    border-radius: 5px;
+    align-items: center;
+    margin:200px auto;
+    text-align: center;
+    line-height: 50px;
+    padding: 20px;
+    
+    
+}
+.playground
+{
+    display: none;
+}
+.tbl_login
+{
+   margin: 0 auto;
+}
+.login_content button
+{
+    width: 100%;
+    height: 30px;
+    background-color:#ff6a6a;
+    border: none;
+    border-radius: 20px;
+    outline: none;
+    color: #fff;
+    box-shadow: 0px 3px 5px #ccc;
+}
+
+.login_content button:hover
+{
+    
+    box-shadow: 0px 0px 1px #ccc;
+}
+.playground
+{
+    display: none;
+    float: left;
+    position: absolute;
+    margin: 50px 250px;
+}
+.message_content
+{
+   
+    width: 400px;
+    float: right;
+    box-shadow: 0px 0px 5px #424242;
+    border-radius: 10px;
+    text-align: center;
+    padding: 10px;
+   
+    
+}
+.message_content input[type="text"]
+{
+    height: 20px;
+    padding: 2px;
+    border: none;
+    background-color: #ccc;
+    color: #424242;
+    outline: none;
+    box-shadow: 0px 0px 2px #424242;
+}
+
+.message_content button
+{
+    height: 20px;
+    width: 60px;
+    background-color:#ff6a6a;
+    border: none;
+    border-radius: 2px;
+    outline: none;
+    color: #fff;
+    box-shadow: 0px 3px 5px #ccc;
+}
+.chess_board
+{
+    width: 400px;
+   float: left;
+}
